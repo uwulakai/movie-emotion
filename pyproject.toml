@@ -1,0 +1,25 @@
+[project]
+name = "movie-emotion"
+version = "0.1.0"
+authors = [{ name = "Черемисин Максим", email = "b1elq@mail.ru" }]
+description = "Веб-сервис для кинолюбителей с подбором фильмов по эмоциональному запросу клиента"
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+classifiers = [
+	"Framework :: Django",
+	"Framework :: Django :: 5.2",
+	"Programming Language :: Python :: 3.13",
+]
+dependencies = [
+	"djangorestframework-simplejwt>=5.2.2",
+	"psycopg2>=2.9.10",
+	"setuptools>=78.1.0",
+	"django-upgrade>=1.24.0",
+	"djoser>=2.3.1",
+	"django-cors-headers>=4.7.0",
+	"django>=5.2",
+	"djangorestframework>=3.16.0",
+	"drf-spectacular>=0.28.0",
+	"gunicorn>=23.0.0",
+	"pydantic"
+]

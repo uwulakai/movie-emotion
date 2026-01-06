@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-17}-alpine
+    container_name: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-example_db}
+      POSTGRES_USER: ${DB_USER:-example_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-example_pass}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-example_user} -d ${DB_NAME:-example_db} || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+  django-service:
+    build:
+      context: .
+    hostname: django-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - app-network
+
+networks:
+  default:
+    name: app-network
+    external: true
+
+volumes:
+  postgres_data:

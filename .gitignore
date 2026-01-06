@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Celery и Celery Beat
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+
+# Swagger
+swagger.json
+
+# Виртуальные окружения
+venv/
+.env
+
+# Логи
+*.log
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+Dockerfile.dev
+
+# Артефакты сборки
+build/
+dist/
+*.egg-info/
+
+# Статические файлы и медиа (если они не должны быть в репозитории)
+staticfiles/
+media/
+
+# Файлы конфиденциальной информации
+*.env
+
+# Другие временные файлы
+*.tmp
+*.temp
+
+# Системные файлы MacOS
+.AppleDouble
+.LSOverride
+.DS_Store
+
+# Прочие временные файлы
+*.swp
+*~
