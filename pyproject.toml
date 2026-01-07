@@ -21,5 +21,8 @@ dependencies = [
 	"djangorestframework>=3.16.0",
 	"drf-spectacular>=0.28.0",
 	"gunicorn>=23.0.0",
-	"pydantic"
+	"pydantic",
+	"pydantic_settings",
+	"Pillow",
+	"python-slugify"
 ]

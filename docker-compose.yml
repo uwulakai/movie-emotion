@@ -1,20 +1,18 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:${POSTGRES_VERSION:-17}-alpine
-    container_name: postgres
+  postgres_movie_emotion:
+    image: postgres:15-alpine
+    container_name: postgres_movie_emotion
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${DB_NAME:-example_db}
-      POSTGRES_USER: ${DB_USER:-example_user}
-      POSTGRES_PASSWORD: ${DB_PASS:-example_pass}
+      POSTGRES_DB: ${POSTGRES_DB_NAME:-example_db}
+      POSTGRES_USER: ${POSTGRES_USER:-example_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS:-example_pass}
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${DB_USER:-example_user} -d ${DB_NAME:-example_db} || exit 1",
+          "pg_isready -U ${POSTGRES_USER:-example_user} -d ${POSTGRES_DB_NAME:-example_db} || exit 1",
         ]
       interval: 5s
       timeout: 5s
@@ -28,7 +26,7 @@ services:
       context: .
     hostname: django-service
     depends_on:
-      postgres:
+      postgres_movie_emotion:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -37,14 +35,16 @@ services:
     env_file:
       - .env
     command: >
-      sh -c "python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py makemigrations --noinput &&
+      python manage.py migrate --noinput &&
+      python manage.py load_initial_data &&
+      python manage.py runserver 0.0.0.0:8000"
     networks:
       - app-network
 
 networks:
-  default:
-    name: app-network
-    external: true
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
