@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование профиля - Movie Emotion{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-edit"></i> Редактирование профиля</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">Имя</label>
+                        {{ form.first_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Фамилия</label>
+                        {{ form.last_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_avatar" class="form-label">Аватар</label>
+                        {{ form.avatar }}
+                        {% if profile.avatar %}
+                            <div class="mt-2">
+                                <img src="{{ profile.avatar.url }}" width="100" alt="Current avatar">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_bio" class="form-label">О себе</label>
+                        {{ form.bio }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Предпочитаемые эмоции</label>
+                        <div class="d-flex flex-wrap">
+                            {% for emotion in form.preferred_emotions %}
+                                <div class="form-check me-3 mb-2">
+                                    {{ emotion.tag }}
+                                    <label class="form-check-label" for="{{ emotion.id_for_label }}">
+                                        <span class="emotion-badge" style="background-color: {{ emotion.choice_label.color }}; color: white;">
+                                            {{ emotion.choice_label }}
+                                        </span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_notification_frequency" class="form-label">Частота уведомлений</label>
+                        {{ form.notification_frequency }}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.email_notifications }}
+                        <label class="form-check-label" for="id_email_notifications">
+                            Email уведомления
+                        </label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_telegram_id" class="form-label">Telegram ID</label>
+                        {{ form.telegram_id }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <a href="{% url 'users:profile' %}" class="btn btn-secondary">
+                        Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

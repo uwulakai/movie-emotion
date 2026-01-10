@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Каталог фильмов - Movie Emotion{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-film"></i> Каталог фильмов
+        </h1>
+    </div>
+</div>
+
+<!-- Search Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'films:list' %}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="id_search" class="form-label">Поиск</label>
+                    {{ search_form.search }}
+                </div>
+                <div class="col-md-3">
+                    <label for="id_genre" class="form-label">Жанр</label>
+                    {{ search_form.genre }}
+                </div>
+                <div class="col-md-3">
+                    <label for="id_year" class="form-label">Год</label>
+                    {{ search_form.year }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Найти
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <label class="form-label">Эмоции:</label>
+                    <div class="d-flex flex-wrap">
+                        {% for emotion in emotions %}
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="emotions" value="{{ emotion.id }}" 
+                                       id="emotion_{{ emotion.id }}"
+                                       {% if emotion.id|stringformat:"s" in request.GET.emotions %}checked{% endif %}>
+                                <label class="form-check-label" for="emotion_{{ emotion.id }}">
+                                    <span class="emotion-badge" style="background-color: {{ emotion.color }}; color: white;">
+                                        <i class="fas {{ emotion.icon }}"></i> {{ emotion.name }}
+                                    </span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Films Grid -->
+{% if films %}
+    <div class="row">
+        {% for film in films %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card h-100">
+                    {% if film.poster %}
+                        <img src="{{ film.poster.url }}" class="card-img-top" alt="{{ film.title }}" style="height: 300px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                            <i class="fas fa-film fa-3x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ film.title }}</h5>
+                        <p class="card-text text-muted small">
+                            <i class="fas fa-calendar"></i> {{ film.year }} | 
+                            <i class="fas fa-clock"></i> {{ film.duration }} мин
+                        </p>
+                        <p class="card-text small">{{ film.description|truncatewords:15 }}</p>
+                        <div class="mt-auto">
+                            <div class="mb-2">
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-star"></i> {{ film.rating|floatformat:1 }}
+                                </span>
+                                {% for choice in genres %}
+                                    {% if choice.0 == film.genre %}
+                                        <span class="badge bg-secondary">{{ choice.1 }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'films:detail' film.pk %}" class="btn btn-primary btn-sm w-100">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Фильмы не найдены. Попробуйте изменить параметры поиска.
+    </div>
+{% endif %}
+{% endblock %}

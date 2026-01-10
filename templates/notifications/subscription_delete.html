@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Удалить подписку - Movie Emotion{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0"><i class="fas fa-trash"></i> Удаление подписки</h3>
+            </div>
+            <div class="card-body">
+                <p>Вы уверены, что хотите удалить подписку на эмоцию 
+                    <span class="emotion-badge" style="background-color: {{ subscription.emotion.color }}; color: white;">
+                        <i class="fas {{ subscription.emotion.icon }}"></i> {{ subscription.emotion.name }}
+                    </span>?
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                    <a href="{% url 'notifications:subscription_list' %}" class="btn btn-secondary">
+                        Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

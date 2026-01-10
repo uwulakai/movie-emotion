@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Создать подписку - Movie Emotion{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-plus"></i> Создать подписку</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_emotion" class="form-label">Эмоция</label>
+                        {{ form.emotion }}
+                        {% if form.emotion.errors %}
+                            <div class="text-danger">{{ form.emotion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_min_intensity" class="form-label">
+                            Минимальная интенсивность: <span id="intensity_value">5</span>/10
+                        </label>
+                        {{ form.min_intensity }}
+                        {% if form.min_intensity.errors %}
+                            <div class="text-danger">{{ form.min_intensity.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> Создать подписку
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const intensityInput = document.getElementById('id_min_intensity');
+    const intensityValue = document.getElementById('intensity_value');
+    
+    if (intensityInput && intensityValue) {
+        intensityInput.addEventListener('input', function() {
+            intensityValue.textContent = this.value;
+        });
+    }
+</script>
+{% endblock %}

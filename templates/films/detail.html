@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ film.title }} - Movie Emotion{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        {% if film.poster %}
+            <img src="{{ film.poster.url }}" class="film-poster" alt="{{ film.title }}">
+        {% else %}
+            <div class="film-poster bg-secondary d-flex align-items-center justify-content-center">
+                <i class="fas fa-film fa-5x text-white"></i>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <h1 class="display-4 mb-3">{{ film.title }}</h1>
+        {% if film.original_title %}
+            <p class="text-muted">{{ film.original_title }}</p>
+        {% endif %}
+        
+        <div class="mb-3">
+            <span class="badge bg-primary fs-6 me-2">
+                <i class="fas fa-star"></i> {{ film.rating|floatformat:1 }}
+            </span>
+            <span class="badge bg-secondary me-2">{{ film.get_genre_display }}</span>
+            <span class="badge bg-info me-2">
+                <i class="fas fa-calendar"></i> {{ film.year }}
+            </span>
+            <span class="badge bg-success me-2">
+                <i class="fas fa-clock"></i> {{ film.duration_hours }}
+            </span>
+            <span class="badge bg-warning">
+                <i class="fas fa-eye"></i> {{ film.views_count }} просмотров
+            </span>
+        </div>
+        
+        <div class="mb-3">
+            <p><strong>Режиссер:</strong> {{ film.director }}</p>
+            <p><strong>Страна:</strong> {{ film.country }}</p>
+        </div>
+        
+        <p class="lead">{{ film.description }}</p>
+        
+        {% if user.is_authenticated %}
+            <div class="mt-3">
+                <a href="{% url 'users:toggle_favorite' film.id %}" class="btn btn-outline-danger">
+                    <i class="fas fa-heart"></i> 
+                    {% if film in user.profile.favorite_films.all %}
+                        Удалить из избранного
+                    {% else %}
+                        Добавить в избранное
+                    {% endif %}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Emotion Profile Chart -->
+{% if emotion_ratings %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-pie"></i> Эмоциональный профиль фильма</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="emotionChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-12">
+            <h4>Детали эмоций:</h4>
+            <div class="d-flex flex-wrap">
+                {% for rating in emotion_ratings %}
+                    <div class="emotion-badge me-3 mb-2" style="background-color: {{ rating.emotion.color }}; color: white; padding: 10px 20px;">
+                        <i class="fas {{ rating.emotion.icon }}"></i> 
+                        <strong>{{ rating.emotion.name }}</strong>: {{ rating.intensity }}/10
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Similar Films -->
+{% if similar_films %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Похожие фильмы</h3>
+            <div class="row">
+                {% for similar in similar_films %}
+                    <div class="col-md-2 mb-3">
+                        <div class="card">
+                            {% if similar.poster %}
+                                <img src="{{ similar.poster.url }}" class="card-img-top" alt="{{ similar.title }}" style="height: 200px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body p-2">
+                                <h6 class="card-title small">{{ similar.title }}</h6>
+                                <a href="{% url 'films:detail' similar.pk %}" class="btn btn-sm btn-primary w-100">Смотреть</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    {% if emotion_ratings %}
+    const ctx = document.getElementById('emotionChart').getContext('2d');
+    const emotionData = {
+        labels: [
+            {% for rating in emotion_ratings %}
+                '{{ rating.emotion.name }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Интенсивность эмоций',
+            data: [
+                {% for rating in emotion_ratings %}
+                    {{ rating.intensity }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                {% for rating in emotion_ratings %}
+                    '{{ rating.emotion.color }}',
+                {% endfor %}
+            ],
+            borderWidth: 2
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: emotionData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
