@@ -34,7 +34,6 @@ class Emotion(models.Model):
         if not self.slug or self.slug.strip() == "":
             self.slug = slugify(self.name)
 
-        # Убедись, что slug уникален
         if self.slug:
             original_slug = self.slug
             counter = 1

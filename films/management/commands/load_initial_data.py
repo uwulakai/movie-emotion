@@ -21,7 +21,7 @@ class Command(BaseCommand):
         admin_username = env_settings.admin.ADMIN_USERNAME.get_secret_value()
 
         with transaction.atomic():
-            # ОЧИСТКА СТАРЫХ ДАННЫХ (опционально, но рекомендуется)
+            # ОЧИСТКА СТАРЫХ ДАННЫХ (опционально, для разработки)
             self.stdout.write("Очистка старых данных...")
             FilmEmotionRating.objects.all().delete()
             Film.objects.all().delete()

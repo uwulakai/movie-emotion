@@ -1,21 +1,19 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-try:
-    from django_filters.rest_framework import DjangoFilterBackend
-except ImportError:
-    # Если django-filter не установлен, используем только встроенные фильтры
-    DjangoFilterBackend = None
 
 from .models import Film, FilmEmotionRating
 from .serializers import FilmSerializer, FilmListSerializer, EmotionSerializer
 from emotions.models import Emotion
+
+DjangoFilterBackend = None
 
 
 class FilmViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet для работы с фильмами через API
     """
+
     queryset = Film.objects.filter(is_published=True).prefetch_related(
         "emotion_ratings__emotion"
     )
@@ -64,7 +62,7 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
         """
         film = self.get_object()
         ratings = FilmEmotionRating.objects.filter(film=film).select_related("emotion")
-        
+
         profile = {
             rating.emotion.name: {
                 "intensity": rating.intensity,
@@ -73,7 +71,7 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
             }
             for rating in ratings
         }
-        
+
         return Response(profile)
 
 
@@ -81,6 +79,7 @@ class EmotionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet для работы с эмоциями через API
     """
+
     queryset = Emotion.objects.filter(is_active=True)
     serializer_class = EmotionSerializer
     filter_backends = [filters.SearchFilter]
