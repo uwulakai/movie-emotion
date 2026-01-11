@@ -43,17 +43,6 @@ class EmailSettings(BaseSettingsConfig):
     EMAIL_HOST_PASSWORD: SecretStr
 
 
-class S3Settings(BaseSettingsConfig):
-    """Настройки подключения S3-клиента"""
-
-    S3_BUCKET_NAME: SecretStr
-    S3_BUCKET_URL: str = "https://storage.clo.ru"
-    S3_ENDPOINT_URL: str = "https://storage.clo.ru:443"
-    S3_ACCESS_KEY: SecretStr
-    S3_SECRET_KEY: SecretStr
-    S3_SIGNATURE_VERSION: str = "s3v4"
-
-
 class Settings(BaseSettings):
     """Общий класс настроек"""
 

@@ -24,5 +24,6 @@ dependencies = [
 	"pydantic",
 	"pydantic_settings",
 	"Pillow",
-	"python-slugify"
+	"python-slugify",
+	
 ]
