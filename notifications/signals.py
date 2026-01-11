@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
@@ -7,89 +7,138 @@ from films.models import Film, FilmEmotionRating
 from .models import Subscription, Notification
 
 
-@receiver(post_save, sender=Film)
-def notify_subscribers_on_new_film(sender, instance, created, **kwargs):
-    """Отправляет уведомления подписчикам при создании нового фильма"""
-    if not created or not instance.is_published:
+def _notify_subscribers_for_film(film):
+    """Отправляет уведомления всем подписчикам для опубликованного фильма."""
+
+    # Проверяем, что фильм опубликован
+    if not film.is_published:
         return
 
-    # Получаем эмоциональные оценки фильма
-    emotion_ratings = FilmEmotionRating.objects.filter(film=instance).select_related(
+    # Получаем все эмоциональные оценки фильма
+    emotion_ratings = FilmEmotionRating.objects.filter(film=film).select_related(
         "emotion"
     )
 
+    # Если у фильма нет оценок - не отправляем уведомления
     if not emotion_ratings.exists():
         return
 
-    # Находим все активные подписки, которые соответствуют эмоциям фильма
+    # Для каждой эмоциональной оценки
     for rating in emotion_ratings:
+        emotion = rating.emotion
+        intensity = rating.intensity
+
+        # Ищем активные подписки для этой эмоции с подходящей интенсивностью
         subscriptions = Subscription.objects.filter(
-            emotion=rating.emotion,
-            min_intensity__lte=rating.intensity,
-            is_active=True,
+            emotion=emotion, min_intensity__lte=intensity, is_active=True
         ).select_related("user__user")
 
         for subscription in subscriptions:
-            user = subscription.user.user
-            profile = subscription.user
+            user_profile = subscription.user
+            user = user_profile.user
 
-            # Проверяем настройки уведомлений пользователя
-            if not profile.email_notifications:
-                # Создаем уведомление, но не отправляем email
-                Notification.objects.create(
-                    user=profile,
-                    subscription=subscription,
-                    film=instance,
-                    emotion=rating.emotion,
-                    notification_type="subscription",
-                    title=f'Новый фильм: "{instance.title}"',
-                    message=(
-                        f'По вашей подписке на эмоцию "{rating.emotion.name}" '
-                        f'появился новый фильм "{instance.title}" '
-                        f"({instance.year}) с интенсивностью {rating.intensity}/10."
-                    ),
-                )
+            # Проверяем, не было ли уже уведомления для этой комбинации
+            existing_notification = Notification.objects.filter(
+                user=user_profile,
+                film=film,
+                emotion=emotion,
+                notification_type="subscription",
+            ).exists()
+
+            if existing_notification:
                 continue
 
-            # Создаем уведомление в базе данных
+            # Создаём уведомление
             notification = Notification.objects.create(
-                user=profile,
+                user=user_profile,
                 subscription=subscription,
-                film=instance,
-                emotion=rating.emotion,
+                film=film,
+                emotion=emotion,
                 notification_type="subscription",
-                title=f'Новый фильм: "{instance.title}"',
+                title=f'Новый фильм: "{film.title}"',
                 message=(
-                    f'По вашей подписке на эмоцию "{rating.emotion.name}" '
-                    f'появился новый фильм "{instance.title}" '
-                    f"({instance.year}) с интенсивностью {rating.intensity}/10."
+                    f'По вашей подписке на эмоцию "{emotion.name}" '
+                    f'появился новый фильм "{film.title}" ({film.year}) '
+                    f"с интенсивностью {intensity}/10."
                 ),
             )
 
-            # Отправляем email уведомление
-            try:
-                send_mail(
-                    subject=f'Новый фильм по подписке: "{instance.title}"',
-                    message=(
-                        f"Здравствуйте, {user.username}!\n\n"
-                        f'По вашей подписке на эмоцию "{rating.emotion.name}" '
-                        f"появился новый фильм:\n\n"
-                        f'"{instance.title}" ({instance.year})\n'
-                        f"Режиссер: {instance.director}\n"
-                        f'Интенсивность эмоции "{rating.emotion.name}": {rating.intensity}/10\n\n'
-                        f"Описание: {instance.description[:200]}...\n\n"
-                        f"Посмотреть фильм: {settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else 'localhost'}/films/{instance.id}/\n"
-                    ),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                notification.sent_via_email = True
-                notification.save(update_fields=["sent_via_email"])
-            except Exception as e:
-                # Логируем ошибку, но не прерываем выполнение
-                print(f"Ошибка отправки email для пользователя {user.username}: {e}")
+            # Отправляем email если включено
+            if user_profile.email_notifications and user.email:
+                try:
+                    site_domain = (
+                        settings.ALLOWED_HOSTS[0]
+                        if settings.ALLOWED_HOSTS
+                        else "localhost"
+                    )
+                    if "://" not in site_domain:
+                        site_domain = f"http://{site_domain}"
+
+                    send_mail(
+                        subject=f'MovieEmotion: Новый фильм по подписке - "{film.title}"',
+                        message=(
+                            f"Здравствуйте, {user.username}!\n\n"
+                            f'По вашей подписке на эмоцию "{emotion.name}" '
+                            f"появился новый фильм:\n\n"
+                            f'"{film.title}" ({film.year})\n'
+                            f"Режиссер: {film.director}\n"
+                            f"Жанр: {film.get_genre_display()}\n"
+                            f'Интенсивность эмоции "{emotion.name}": {intensity}/10\n\n'
+                            f"Описание: {film.description[:200]}...\n\n"
+                            f"Посмотреть фильм: {site_domain}/films/{film.id}/\n\n"
+                            f"---\n"
+                            f"MovieEmotion - подбор фильмов по эмоциям\n"
+                            f"Отписаться от уведомлений можно в личном кабинете"
+                        ),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                    )
+                    notification.sent_via_email = True
+                    notification.save(update_fields=["sent_via_email"])
+                except Exception as e:
+                    print(
+                        f"Ошибка отправки email для пользователя {user.username}: {e}"
+                    )
 
             # Обновляем дату последнего уведомления
             subscription.last_notified = notification.created_at
             subscription.save(update_fields=["last_notified"])
+
+
+@receiver(pre_save, sender=Film)
+def _store_old_publish_state(sender, instance, **kwargs):
+    """Сохраняем предыдущее состояние is_published для сравнения."""
+    if instance.pk:
+        try:
+            prev = Film.objects.get(pk=instance.pk)
+            instance._old_is_published = prev.is_published
+        except Film.DoesNotExist:
+            instance._old_is_published = None
+    else:
+        instance._old_is_published = None
+
+
+@receiver(post_save, sender=Film)
+def handle_film_publish_changes(sender, instance, created, **kwargs):
+    """Обрабатываем публикацию фильма."""
+
+    # Определяем, был ли фильм только что опубликован
+    just_published = False
+
+    # Ситуация 1: Фильм создан и сразу опубликован
+    if created and instance.is_published:
+        just_published = True
+
+    # Ситуация 2: Фильм обновлен и изменился статус с неопубликованного на опубликованный
+    elif not created and hasattr(instance, "_old_is_published"):
+        if instance._old_is_published is False and instance.is_published:
+            just_published = True
+
+    # Если фильм не был опубликован - ничего не делаем
+    if not just_published:
+        return
+
+    # Используем transaction.on_commit чтобы гарантировать, что фильм сохранен
+    from django.db import transaction
+
+    transaction.on_commit(lambda: _notify_subscribers_for_film(instance))

@@ -141,7 +141,12 @@ class ConfirmRegistrationView(FormView):
 
         UserProfile.objects.get_or_create(
             user=user,
-            defaults={"notification_frequency": "daily", "email_notifications": True},
+            defaults={
+                "first_name": user.first_name or "",
+                "last_name": user.last_name or "",
+                "notification_frequency": "daily",
+                "email_notifications": True,
+            },
         )
 
         confirmation.is_used = True
@@ -167,6 +172,8 @@ def profile_view(request):
     profile, created = UserProfile.objects.get_or_create(
         user=request.user,
         defaults={
+            "first_name": request.user.first_name or "",
+            "last_name": request.user.last_name or "",
             "notification_frequency": "daily",
             "email_notifications": True,
         },
@@ -192,6 +199,8 @@ def profile_edit_view(request):
     profile, created = UserProfile.objects.get_or_create(
         user=request.user,
         defaults={
+            "first_name": request.user.first_name or "",
+            "last_name": request.user.last_name or "",
             "notification_frequency": "daily",
             "email_notifications": True,
         },
