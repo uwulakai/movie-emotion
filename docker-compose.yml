@@ -2,8 +2,6 @@ services:
   postgres_movie_emotion:
     image: postgres:15-alpine
     container_name: postgres_movie_emotion
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB_NAME:-example_db}
       POSTGRES_USER: ${POSTGRES_USER:-example_user}
@@ -28,8 +26,6 @@ services:
     depends_on:
       postgres_movie_emotion:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     volumes:
       - .:/app
     env_file:
