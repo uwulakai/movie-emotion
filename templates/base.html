@@ -102,9 +102,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Выход
-                            </a>
+                            <form method="post" action="{% url 'users:logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link" style="color:inherit; text-decoration:none;">
+                                    <i class="fas fa-sign-out-alt"></i> Выход
+                                </button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="nav-item">
