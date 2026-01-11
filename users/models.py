@@ -11,8 +11,12 @@ class UserProfile(models.Model):
         related_name="profile",
         verbose_name="Пользователь",
     )
-    first_name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Имя")
-    last_name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Фамилия")
+    first_name = models.CharField(
+        max_length=50, blank=True, null=True, verbose_name="Имя"
+    )
+    last_name = models.CharField(
+        max_length=50, blank=True, null=True, verbose_name="Фамилия"
+    )
     avatar = models.ImageField(
         upload_to="users/avatars/", blank=True, null=True, verbose_name="Аватар"
     )
@@ -58,3 +62,20 @@ class UserProfile(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+
+class EmailConfirmation(models.Model):
+    """Код подтверждения регистрации по email. Привязан к почте, а не к User,"""
+
+    email = models.EmailField(max_length=255, db_index=True)
+    code = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Код подтверждения"
+        verbose_name_plural = "Коды подтверждения"
+        get_latest_by = "created_at"
+
+    def __str__(self):
+        return f"Код для {self.email}: {self.code}"

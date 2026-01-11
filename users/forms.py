@@ -25,7 +25,14 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email", "first_name", "last_name", "password1", "password2")
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password1",
+            "password2",
+        )
         widgets = {
             "username": forms.TextInput(attrs={"class": "form-control"}),
         }
@@ -78,3 +85,16 @@ class UserProfileForm(forms.ModelForm):
         self.fields["preferred_emotions"].queryset = Emotion.objects.filter(
             is_active=True
         )
+
+
+class ConfirmCodeForm(forms.Form):
+    email = forms.EmailField(
+        required=True,
+        label="Email",
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    )
+    code = forms.CharField(
+        required=True,
+        label="Код подтверждения",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )

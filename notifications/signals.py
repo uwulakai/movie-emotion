@@ -46,7 +46,7 @@ def notify_subscribers_on_new_film(sender, instance, created, **kwargs):
                     message=(
                         f'По вашей подписке на эмоцию "{rating.emotion.name}" '
                         f'появился новый фильм "{instance.title}" '
-                        f'({instance.year}) с интенсивностью {rating.intensity}/10.'
+                        f"({instance.year}) с интенсивностью {rating.intensity}/10."
                     ),
                 )
                 continue
@@ -62,7 +62,7 @@ def notify_subscribers_on_new_film(sender, instance, created, **kwargs):
                 message=(
                     f'По вашей подписке на эмоцию "{rating.emotion.name}" '
                     f'появился новый фильм "{instance.title}" '
-                    f'({instance.year}) с интенсивностью {rating.intensity}/10.'
+                    f"({instance.year}) с интенсивностью {rating.intensity}/10."
                 ),
             )
 
@@ -73,9 +73,9 @@ def notify_subscribers_on_new_film(sender, instance, created, **kwargs):
                     message=(
                         f"Здравствуйте, {user.username}!\n\n"
                         f'По вашей подписке на эмоцию "{rating.emotion.name}" '
-                        f'появился новый фильм:\n\n'
+                        f"появился новый фильм:\n\n"
                         f'"{instance.title}" ({instance.year})\n'
-                        f'Режиссер: {instance.director}\n'
+                        f"Режиссер: {instance.director}\n"
                         f'Интенсивность эмоции "{rating.emotion.name}": {rating.intensity}/10\n\n'
                         f"Описание: {instance.description[:200]}...\n\n"
                         f"Посмотреть фильм: {settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else 'localhost'}/films/{instance.id}/\n"
