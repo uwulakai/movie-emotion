@@ -20,6 +20,7 @@ class AdminSettings(BaseSettingsConfig):
     ADMIN_EMAIL: SecretStr
     DJANGO_SECRET_KEY: SecretStr
     DJANGO_DEBUG_MODE: bool = False
+    SITE_DOMAIN: str
 
 
 class PostgresSettings(BaseSettingsConfig):

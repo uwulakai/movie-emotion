@@ -26,7 +26,9 @@ SECRET_KEY = env_settings.admin.DJANGO_SECRET_KEY.get_secret_value()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_settings.admin.DJANGO_DEBUG_MODE
 
-ALLOWED_HOSTS = ["*"]  # В production указать конкретные домены
+ALLOWED_HOSTS = (
+    ["*"] if env_settings.admin.DJANGO_DEBUG_MODE else [env_settings.admin.SITE_DOMAIN]
+)
 
 
 # Application definition
