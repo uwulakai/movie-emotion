@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env_settings.admin.DJANGO_SECRET_KEY.get_secret_value()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_settings.admin.DJANGO_DEBUG_MODE
 
 ALLOWED_HOSTS = ["*"]  # В production указать конкретные домены
 

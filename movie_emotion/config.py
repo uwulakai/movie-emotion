@@ -19,6 +19,7 @@ class AdminSettings(BaseSettingsConfig):
     ADMIN_PASSWORD: SecretStr
     ADMIN_EMAIL: SecretStr
     DJANGO_SECRET_KEY: SecretStr
+    DJANGO_DEBUG_MODE: bool = False
 
 
 class PostgresSettings(BaseSettingsConfig):
