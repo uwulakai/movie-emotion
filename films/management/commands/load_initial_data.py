@@ -22,13 +22,14 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             # ОЧИСТКА СТАРЫХ ДАННЫХ (опционально, для разработки)
-            self.stdout.write("Очистка старых данных...")
-            FilmEmotionRating.objects.all().delete()
-            Film.objects.all().delete()
-            Emotion.objects.all().delete()
-            UserProfile.objects.filter(user__is_superuser=False).delete()
-            User.objects.filter(is_superuser=False).delete()
-            self.stdout.write("Старые данные очищены")
+            if env_settings.admin.DJANGO_DEBUG_MODE:
+                self.stdout.write("Очистка старых данных...")
+                FilmEmotionRating.objects.all().delete()
+                Film.objects.all().delete()
+                Emotion.objects.all().delete()
+                UserProfile.objects.filter(user__is_superuser=False).delete()
+                User.objects.filter(is_superuser=False).delete()
+                self.stdout.write("Старые данные очищены")
 
             # Создаем суперпользователя
             if not User.objects.filter(username=admin_username).exists():
