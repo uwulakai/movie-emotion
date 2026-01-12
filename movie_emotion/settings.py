@@ -30,6 +30,11 @@ ALLOWED_HOSTS = (
     ["*"] if env_settings.admin.DJANGO_DEBUG_MODE else [env_settings.admin.SITE_DOMAIN]
 )
 
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{env_settings.admin.SITE_DOMAIN}",
+    f"http://{env_settings.admin.SITE_DOMAIN}",
+]
+
 
 # Application definition
 
