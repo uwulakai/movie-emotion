@@ -10,11 +10,21 @@ from django.utils import timezone
 from datetime import timedelta
 import random
 
+from django.contrib.auth import views as auth_views
+
 from django.contrib.auth.models import User
 
 from .models import UserProfile, EmailConfirmation
 from .forms import UserRegistrationForm, UserProfileForm, ConfirmCodeForm
 from films.models import Film
+
+
+class CustomLoginView(auth_views.LoginView):
+    template_name = "users/login.html"
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Неверный логин или пароль")
+        return super().form_invalid(form)
 
 
 class RegisterView(CreateView):
